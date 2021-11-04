@@ -11,6 +11,7 @@ import java.sql.*;
  */
 @Component
 public class BookDaoImpl implements BookDao {
+
     private final DataSource source;
     private final AuthorDao authorDao;
 
@@ -21,28 +22,18 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public Book getById(Long id) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        ResultSet resultSet = null;
 
-        try {
-            connection = source.getConnection();
-            ps = connection.prepareStatement("SELECT * FROM book where id = ?");
+        try(Connection connection = source.getConnection();
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM book where id = ?");) {
+
             ps.setLong(1, id);
-            resultSet = ps.executeQuery();
+            ResultSet resultSet = ps.executeQuery();
 
             if (resultSet.next()) {
                 return getBookFromRS(resultSet);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                closeAll(resultSet, ps, connection);
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
 
         return null;
@@ -50,27 +41,17 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public Book findBookByTitle(String title) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        ResultSet resultSet = null;
 
-        try {
-            connection = source.getConnection();
-            ps = connection.prepareStatement("SELECT * FROM book where title = ?");
+        try(Connection connection = source.getConnection();
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM book where title = ?");) {
             ps.setString(1, title);
-            resultSet = ps.executeQuery();
+            ResultSet resultSet = ps.executeQuery();
 
             if (resultSet.next()) {
                 return getBookFromRS(resultSet);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                closeAll(resultSet, ps, connection);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
 
         return null;
@@ -78,13 +59,11 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public Book saveNewBook(Book book) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        ResultSet resultSet = null;
 
-        try {
-            connection = source.getConnection();
-            ps = connection.prepareStatement("INSERT INTO book (isbn, publisher, title, author_id) VALUES (?, ?, ?, ?)");
+        try(Connection connection = source.getConnection();
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO book (isbn, publisher, title, author_id) VALUES (?, ?, ?, ?)");
+            Statement statement = connection.createStatement();) {
+
             ps.setString(1, book.getIsbn());
             ps.setString(2, book.getPublisher());
             ps.setString(3, book.getTitle());
@@ -97,8 +76,7 @@ public class BookDaoImpl implements BookDao {
 
             ps.execute();
 
-            Statement statement = connection.createStatement();
-            resultSet = statement.executeQuery("SELECT LAST_INSERT_ID()");
+            ResultSet resultSet = statement.executeQuery("SELECT LAST_INSERT_ID()");
 
             if (resultSet.next()) {
                 Long savedId = resultSet.getLong(1);
@@ -108,12 +86,6 @@ public class BookDaoImpl implements BookDao {
             statement.close();
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                closeAll(resultSet, ps, connection);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
 
         return null;
@@ -121,13 +93,9 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public Book updateBook(Book book) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        ResultSet resultSet = null;
+        try(Connection connection = source.getConnection();
+            PreparedStatement ps = connection.prepareStatement("UPDATE book set isbn = ?, publisher = ?, title = ?, author_id = ? where id = ?");) {
 
-        try {
-            connection = source.getConnection();
-            ps = connection.prepareStatement("UPDATE book set isbn = ?, publisher = ?, title = ?, author_id = ? where id = ?");
             ps.setString(1, book.getIsbn());
             ps.setString(2, book.getPublisher());
             ps.setString(3, book.getTitle());
@@ -140,12 +108,6 @@ public class BookDaoImpl implements BookDao {
 
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                closeAll(resultSet, ps, connection);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
 
         return getById(book.getId());
@@ -153,22 +115,12 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public void deleteBookById(Long id) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-
-        try {
-            connection = source.getConnection();
-            ps = connection.prepareStatement("DELETE from book where id = ?");
+        try(Connection connection = source.getConnection();
+            PreparedStatement ps = connection.prepareStatement("DELETE from book where id = ?");) {
             ps.setLong(1, id);
             ps.execute();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        } finally {
-            try {
-                closeAll(null, ps, connection);
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
         }
     }
 
@@ -181,19 +133,5 @@ public class BookDaoImpl implements BookDao {
         book.setAuthor(authorDao.getById(resultSet.getLong(5)));
 
         return book;
-    }
-
-    private void closeAll(ResultSet resultSet, PreparedStatement ps, Connection connection) throws SQLException {
-        if (resultSet != null) {
-            resultSet.close();
-        }
-
-        if (ps != null){
-            ps.close();
-        }
-
-        if (connection != null){
-            connection.close();
-        }
     }
 }

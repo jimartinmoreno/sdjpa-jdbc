@@ -68,6 +68,7 @@ public class AuthorDaoImpl implements AuthorDao {
 
             ps.setString(1, author.getFirstName());
             ps.setString(2, author.getLastName());
+            //ps.executeUpdate();
             ps.execute();
 
             ResultSet resultSet = statement.executeQuery("SELECT LAST_INSERT_ID()");

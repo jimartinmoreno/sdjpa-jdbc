@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -41,7 +42,6 @@ public class AuthorDaoIntegrationTest {
         bookDao.deleteBookById(saved.getId());
 
         Book deleted = bookDao.getById(saved.getId());
-
         assertThat(deleted).isNull();
     }
 
@@ -62,8 +62,11 @@ public class AuthorDaoIntegrationTest {
         bookDao.updateBook(saved);
 
         Book fetched = bookDao.getById(saved.getId());
-
         assertThat(fetched.getTitle()).isEqualTo("New Book");
+
+        bookDao.deleteBookById(fetched.getId());
+        Book deleted = bookDao.getById(fetched.getId());
+        assertThat(deleted).isNull();
     }
 
     @Test
@@ -78,8 +81,11 @@ public class AuthorDaoIntegrationTest {
 
         book.setAuthor(author);
         Book saved = bookDao.saveNewBook(book);
-
         assertThat(saved).isNotNull();
+
+        bookDao.deleteBookById(saved.getId());
+        Book deleted = bookDao.getById(saved.getId());
+        assertThat(deleted).isNull();
     }
 
     @Test
@@ -95,6 +101,7 @@ public class AuthorDaoIntegrationTest {
     }
 
     @Test
+    @Rollback(value = true)
     void testDeleteAuthor() {
         Author author = new Author();
         author.setFirstName("john");
@@ -102,33 +109,40 @@ public class AuthorDaoIntegrationTest {
 
         Author saved = authorDao.saveNewAuthor(author);
         authorDao.deleteAuthorById(saved.getId());
-
         Author deleted = authorDao.getById(saved.getId());
         assertThat(deleted).isNull();
     }
 
     @Test
+    @Rollback(value = true)
     void testUpdateAuthor() {
         Author author = new Author();
         author.setFirstName("john");
         author.setLastName("t");
 
         Author saved = authorDao.saveNewAuthor(author);
-
         saved.setLastName("Thompson");
         Author updated = authorDao.updateAuthor(saved);
-
         assertThat(updated.getLastName()).isEqualTo("Thompson");
+
+        authorDao.deleteAuthorById(updated.getId());
+        Author deleted = authorDao.getById(updated.getId());
+        assertThat(deleted).isNull();
     }
 
     @Test
+    @Rollback(value = true)
     void testSaveAuthor() {
         Author author = new Author();
         author.setFirstName("Nacho");
         author.setLastName("Martin");
         Author saved = authorDao.saveNewAuthor(author);
-
         assertThat(saved).isNotNull();
+
+        authorDao.deleteAuthorById(saved.getId());
+        Author deleted = authorDao.getById(saved.getId());
+        assertThat(deleted).isNull();
+
     }
 
     @Test

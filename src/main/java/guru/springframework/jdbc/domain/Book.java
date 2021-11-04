@@ -14,6 +14,13 @@ public class Book {
     private String isbn;
     private String publisher;
 
+    /**
+     * Tenemos que poner esta propiedad por que aunque usemos JDBC, hibernate todavía realiza las
+     * validaciones al estar anotadas las clases
+     *
+     * @Transient specifies that the property or field is not persistent. It is used to annotate a
+     * property or field of an entity class, mapped superclass, or embeddable class.
+     */
     @Transient
     private Author authorId;
 
