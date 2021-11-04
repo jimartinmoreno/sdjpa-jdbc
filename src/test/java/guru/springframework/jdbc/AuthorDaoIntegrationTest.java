@@ -18,6 +18,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  */
 @ActiveProfiles("local")
 @DataJpaTest
+// DataJpaTest por defecto no escanea todos los paquetes en busca de los bean.
+// Para indicarle que busque ciertos paquetes usamos esta anotación
 @ComponentScan(basePackages = {"guru.springframework.jdbc.dao"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class AuthorDaoIntegrationTest {
@@ -83,14 +85,12 @@ public class AuthorDaoIntegrationTest {
     @Test
     void testGetBookByName() {
         Book book = bookDao.findBookByTitle("Clean Code");
-
         assertThat(book).isNotNull();
     }
 
     @Test
     void testGetBook() {
         Book book = bookDao.getById(3L);
-
         assertThat(book.getId()).isNotNull();
     }
 
@@ -101,11 +101,9 @@ public class AuthorDaoIntegrationTest {
         author.setLastName("t");
 
         Author saved = authorDao.saveNewAuthor(author);
-
         authorDao.deleteAuthorById(saved.getId());
 
         Author deleted = authorDao.getById(saved.getId());
-
         assertThat(deleted).isNull();
     }
 
@@ -126,8 +124,8 @@ public class AuthorDaoIntegrationTest {
     @Test
     void testSaveAuthor() {
         Author author = new Author();
-        author.setFirstName("John");
-        author.setLastName("Thompson");
+        author.setFirstName("Nacho");
+        author.setLastName("Martin");
         Author saved = authorDao.saveNewAuthor(author);
 
         assertThat(saved).isNotNull();
@@ -136,15 +134,12 @@ public class AuthorDaoIntegrationTest {
     @Test
     void testGetAuthorByName() {
         Author author = authorDao.findAuthorByName("Craig", "Walls");
-
         assertThat(author).isNotNull();
     }
 
     @Test
     void testGetAuthor() {
-
         Author author = authorDao.getById(1L);
-
         assertThat(author).isNotNull();
 
     }
