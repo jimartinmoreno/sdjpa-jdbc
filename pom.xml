@@ -16,7 +16,7 @@
     <properties>
         <java.version>17</java.version>
     </properties>
-    <!-- change made in the remote repository -->
+    <!-- change made in the remote repository 2 -->
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
